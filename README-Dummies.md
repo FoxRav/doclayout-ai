@@ -94,5 +94,6 @@ kuvien-parsinta parse parsittavat\example\document.jpg --mode structural
 
 ## Lisätietoa
 
-- Tekninen README: [`README.md`](README.md)
+- Tekninen README (suomi): [`README.fi.md`](README.fi.md)
+- English README: [`README.md`](README.md)
 - Asennus ja ongelmat: [`docs/SETUP.md`](docs/SETUP.md)

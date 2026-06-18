@@ -1,31 +1,33 @@
 # doclayout-ai
 
-**AI-avusteinen dokumenttilayoutin parsinta:** kuvat ja PDF:t → **rakenteinen Markdown + structural PDF**.
+> Finnish README: [README.fi.md](README.fi.md)
 
-**Hybrid Quality Pipeline:** PaddleOCR-VL vastaa tekstistä, lukujärjestyksestä ja kappalejaosta. PP-StructureV3 vastaa layoutista, bboxeista, kuvista ja PDF-geometriasta.
+**AI-assisted document layout parsing:** images and PDFs → **structured Markdown + structural PDF**.
+
+**Hybrid Quality Pipeline:** PaddleOCR-VL handles text, reading order and paragraph structure. PP-StructureV3 handles layout, bounding boxes, images and PDF geometry.
 
 | | |
 |---|---|
 | **Repo** | [github.com/FoxRav/doclayout-ai](https://github.com/FoxRav/doclayout-ai) |
-| **Helppo aloitus** | [`README-Dummies.md`](README-Dummies.md) |
-| **Asennus** | [`docs/SETUP.md`](docs/SETUP.md) |
-| **Tunnetut virheet & opit** | [`docs/ERRORS.md`](docs/ERRORS.md) |
-| **Kielet** | Ensisijaisesti **suomi**; myös ruotsi, englanti ja muut PaddleOCR-kielet |
-| **Testit** | `pytest tests/` — unit + regressio |
+| **Quick intro** | [`README-Dummies.md`](README-Dummies.md) |
+| **Setup** | [`docs/SETUP.md`](docs/SETUP.md) |
+| **Known issues & lessons** | [`docs/ERRORS.md`](docs/ERRORS.md) |
+| **Languages** | Primarily **Finnish**; also Swedish, English and other PaddleOCR languages |
+| **Tests** | `pytest tests/` — unit + regression |
 
 ---
 
-## Mitä työkalu tekee
+## What the tool does
 
-doclayout-ai muuntaa kuvia ja PDF-tiedostoja kahteen päätulosteeseen:
+doclayout-ai converts images and PDF files into two main outputs:
 
-* rakenteinen Markdown
-* uudelleenrakennettu structural PDF
+* structured Markdown
+* rebuilt structural PDF
 
-Työkalu ei kopioi koko skannausta PDF:n taustakuvaksi. Se tunnistaa dokumentin rakenteen, tekstilohkot, kuvat, otsikot, lukujärjestyksen ja layoutin, ja rakentaa tulosteen uudelleen.
+The tool does not copy the entire scan as a PDF background image. It detects document structure, text blocks, photos, headings, reading order and layout, then reconstructs the output.
 
 ```text
-kuva tai PDF
+image or PDF
     → hybrid parser: PaddleOCR-VL + PP-StructureV3
     → PageModel / layout model
     → final text cleanup
@@ -33,86 +35,86 @@ kuva tai PDF
     → quality report
 ```
 
-### Periaatteet
+### Principles
 
-| Sääntö | Toteutus |
-|--------|----------|
-| Tekstialueet **PDF-tekstinä** | Otsikot, meta, body, caption — ei raster-croppeja tekstille |
-| Vain **valokuvat** kuvacropina | Pääkuva / photo block — ei tekstialueita rasterina |
-| Markdown **PageModelista** | Ei suoraan raaka-OCR:stä; final-text cleanup ennen tulostetta |
-| Ei facsimileä oletuksena | Facsimile vain `--emit-facsimile` → `ocr/<nimi>_facsimile.pdf` |
-| Laadunvalvonta | Quality gate: `PASS` / `PASS_WITH_WARNINGS` / `FAIL` |
+| Rule | Implementation |
+|------|----------------|
+| Text regions rendered as **PDF text** | Headings, meta, body, caption — no raster crops for text |
+| **Photos** only as image crops | Main photo / photo block — no text regions as raster |
+| Markdown from **PageModel** | Not directly from raw OCR; final-text cleanup before output |
+| No facsimile by default | Facsimile only with `--emit-facsimile` → `ocr/<name>_facsimile.pdf` |
+| Quality control | Quality gate: `PASS` / `PASS_WITH_WARNINGS` / `FAIL` |
 
 ---
 
-## Tulostiedostot
+## Output files
 
-### Pääkansio (sama kuin syöte)
+### Main output directory (same as input)
 
-| Tiedosto | Milloin | Sisältö |
-|----------|---------|---------|
-| `<nimi>.md` | Aina | Päämarkdown — UTF-8 BOM, rakenteinen teksti PageModelista |
-| `<nimi>_structural.pdf` | Oletus (`--pdf-mode structural`) | Uudelleenrakennettu sivu: typografia ja layout |
-| `<nimi>_photo.jpg` | Kun StructureV3 löytää `image`-lohkon | Rajattu valokuva |
-| `<nimi>_clean.pdf` | Vain `--emit-clean` | Reflowattu teksti-PDF |
-| `<nimi>_vl.md` | Hybrid/best | VL:n raakamarkdown (vertailu) |
+| File | When | Content |
+|------|------|---------|
+| `<name>.md` | Always | Primary markdown — UTF-8 BOM, structured text from PageModel |
+| `<name>_structural.pdf` | Default (`--pdf-mode structural`) | Rebuilt page: typography and layout |
+| `<name>_photo.jpg` | When StructureV3 finds an `image` block | Cropped photo |
+| `<name>_clean.pdf` | Only `--emit-clean` | Reflowed text PDF |
+| `<name>_vl.md` | Hybrid/best | VL raw markdown (comparison) |
 
-**Juureen ei kirjoiteta:** `*_test.pdf`, `*_facsimile*.pdf` (facsimile → `ocr/`).
+**Not written to repo root:** `*_test.pdf`, `*_facsimile*.pdf` (facsimile → `ocr/`).
 
-### `ocr/`-kansio (QA & debug)
+### `ocr/` directory (QA & debug)
 
-| Tiedosto | Sisältö |
-|----------|---------|
-| `<nimi>_vl_res.json` | PaddleOCR-VL raaka |
-| `<nimi>_structurev3_res.json` | PP-StructureV3 raaka (hybrid/best) |
-| `<nimi>_res.json` | StructureV3 (vain `--engine structurev3`) |
-| `<nimi>_hybrid_res.json` | Yhdistetty hybrid-tulos |
-| `<nimi>_compare_report.json` | VL vs StructureV3 -erot (best) |
-| `<nimi>_layout_debug.jpg` | Bbox-visualisointi lähteestä |
-| `<nimi>_page_model.json` | PageModel debug |
-| `<nimi>_structural_report.json` | Render-raportti |
-| `<nimi>_style_debug.json` | Typografia ja font-roolit |
-| `<nimi>_visual_metrics.json` | Layout-mittarit (gap, whitespace, fontit) |
-| `<nimi>_source_alignment_metrics.json` | Lähde vs renderöity suhteet |
-| `<nimi>_content_audit.json` | Sisältöauditointi |
-| `<nimi>_quality_report.json` | Quality gate -tarkistukset |
-| `<nimi>_search_text.txt` | Hakukelpoinen tekstikerros (debug) |
-| `<nimi>_facsimile.pdf` | Vain `--emit-facsimile` |
-| `<nimi>_ocr_overlay_debug.pdf` | Vain `--debug-pdf` |
+| File | Content |
+|------|---------|
+| `<name>_vl_res.json` | PaddleOCR-VL raw output |
+| `<name>_structurev3_res.json` | PP-StructureV3 raw output (hybrid/best) |
+| `<name>_res.json` | StructureV3 (only `--engine structurev3`) |
+| `<name>_hybrid_res.json` | Combined hybrid result |
+| `<name>_compare_report.json` | VL vs StructureV3 differences (best) |
+| `<name>_layout_debug.jpg` | Bbox visualization from source |
+| `<name>_page_model.json` | PageModel debug |
+| `<name>_structural_report.json` | Render report |
+| `<name>_style_debug.json` | Typography and font roles |
+| `<name>_visual_metrics.json` | Layout metrics (gap, whitespace, fonts) |
+| `<name>_source_alignment_metrics.json` | Source vs rendered ratios |
+| `<name>_content_audit.json` | Content audit |
+| `<name>_quality_report.json` | Quality gate checks |
+| `<name>_search_text.txt` | Searchable text layer (debug) |
+| `<name>_facsimile.pdf` | Only `--emit-facsimile` |
+| `<name>_ocr_overlay_debug.pdf` | Only `--debug-pdf` |
 
-Raaka-OCR JSON **ei** mene suoraan lopulliseen `.md`:ään.
+Raw OCR JSON is **not** written directly to the final `.md`.
 
 ### Final text cleanup
 
-Moduuli `src/kuvien_parsinta/text/final_text_cleanup.py` — **vain final markdown + PDF-teksti**, ei raaka-OCR:ää:
+Module `src/kuvien_parsinta/text/final_text_cleanup.py` — **final markdown + PDF text only**, not raw OCR:
 
-- Unicode replacement / control -merkit pois
-- Pehmeät tavutusmerkit ja rivikatko-tavutukset
-- Literaalikorjaukset tunnetuille OCR-virheille
+- Remove Unicode replacement / control characters
+- Soft hyphens and line-break hyphenation
+- Literal fixes for known OCR errors
 
 ### Quality gate
 
-CLI tulostaa ajon jälkeen:
+After each run, the CLI prints:
 
-| Tulos | Merkitys |
-|-------|----------|
-| `QUALITY: PASS` | Sisältö, layout, typografia, cleanup ja visuaaliset metriikat OK |
-| `QUALITY: PASS_WITH_WARNINGS` | Sisältö ehjä, visuaalinen viimeistely vaatii vielä säätöä |
-| `QUALITY: FAIL` | Sisällön puute, teksticrop, layout-kova virhe tai fonttikoko alle rajan |
+| Result | Meaning |
+|--------|---------|
+| `QUALITY: PASS` | Content, layout, typography, cleanup and visual metrics OK |
+| `QUALITY: PASS_WITH_WARNINGS` | Content intact; visual polish still needs tuning |
+| `QUALITY: FAIL` | Missing content, text crop, hard layout error or font size below threshold |
 
-Tarkistukset: content audit, layout-zonit, visual metrics, text cleanup, crop policy.
+Checks: content audit, layout zones, visual metrics, text cleanup, crop policy.
 
-Yksityiskohdat: [`docs/ERRORS.md`](docs/ERRORS.md).
+Details: [`docs/ERRORS.md`](docs/ERRORS.md).
 
 ---
 
-## Käyttöesimerkki
+## Usage example
 
 ```powershell
 kuvien-parsinta parse parsittavat\example\document.jpg --engine hybrid --quality max
 ```
 
-Tulosteet:
+Output:
 
 ```text
 document.md
@@ -122,7 +124,7 @@ ocr/document_quality_report.json
 
 ---
 
-## Pikakäynnistys
+## Quick start
 
 ```powershell
 git clone https://github.com/FoxRav/doclayout-ai.git
@@ -136,21 +138,21 @@ kuvien-parsinta parse parsittavat\example\document.jpg
 pytest tests/ -q
 ```
 
-**Syötteet:** [`parsittavat/`](parsittavat/) — paikallinen syötekansio (ei commitoida; vain `.gitkeep` repossa).
+**Input:** [`parsittavat/`](parsittavat/) — local input directory (not committed to Git; only `.gitkeep` in the repo).
 
-**Tuloste:** sama kansio kuin syöte + `ocr/`-alikansio.
+**Output:** same directory as input + `ocr/` subdirectory.
 
 ---
 
 ## CLI
 
 ```
-kuvien-parsinta parse <tiedosto> [OPTIONS]
+kuvien-parsinta parse <file> [OPTIONS]
 kuvien-parsinta languages
 ```
 
 ```powershell
-kuvien-parsinta parse <tiedosto> `
+kuvien-parsinta parse <file> `
   [--engine hybrid|vl|structurev3|best|auto] `
   [--quality standard|max] `
   [--pdf-mode structural|clean|facsimile|all] `
@@ -160,100 +162,100 @@ kuvien-parsinta parse <tiedosto> `
   [--no-pdf]
 ```
 
-| `--engine` | Käyttö |
-|------------|--------|
-| `hybrid` | **Oletus** — VL teksti + StructureV3 layout/bbox/kuvat |
-| `vl` | Vain PaddleOCR-VL |
-| `structurev3` | Vain PP-StructureV3 |
-| `best` | Hybrid + vertailuraportti + erilliset raakadatat |
+| `--engine` | Usage |
+|------------|-------|
+| `hybrid` | **Default** — VL text + StructureV3 layout/bbox/photos |
+| `vl` | PaddleOCR-VL only |
+| `structurev3` | PP-StructureV3 only |
+| `best` | Hybrid + comparison report + separate raw outputs |
 
-| `--quality` | Käyttö |
-|-------------|--------|
-| `max` | **Oletus** — orientaatio, unwarping, paras tarkkuus |
-| `standard` | Nopeampi ajo |
+| `--quality` | Usage |
+|-------------|-------|
+| `max` | **Default** — orientation, unwarping, best accuracy |
+| `standard` | Faster run |
 
-| `--pdf-mode` | Käyttö |
-|--------------|--------|
-| `structural` | **Oletus** — `<nimi>_structural.pdf` |
-| `clean` | Vain `<nimi>_clean.pdf` |
-| `facsimile` | Structural; facsimile erikseen |
-| `all` | Structural; muut vain `--emit-*` / `--debug-pdf` |
+| `--pdf-mode` | Usage |
+|--------------|-------|
+| `structural` | **Default** — `<name>_structural.pdf` |
+| `clean` | Only `<name>_clean.pdf` |
+| `facsimile` | Structural; facsimile separately |
+| `all` | Structural; others only via `--emit-*` / `--debug-pdf` |
 
-| `--mode` | Käyttö |
-|----------|--------|
-| `auto` | **Oletus** — dokumenttityypin mukainen tuloste |
-| `flowing` | Yksipalstainen teksti |
-| `structural` | Pakota palstat ja layout-PDF |
+| `--mode` | Usage |
+|----------|-------|
+| `auto` | **Default** — output follows document type |
+| `flowing` | Single-column text |
+| `structural` | Force columns and layout PDF |
 
-| Flag | Lisätulos |
-|------|-----------|
-| `--emit-facsimile` | `ocr/<nimi>_facsimile.pdf` |
-| `--emit-clean` | `<nimi>_clean.pdf` |
+| Flag | Extra output |
+|------|--------------|
+| `--emit-facsimile` | `ocr/<name>_facsimile.pdf` |
+| `--emit-clean` | `<name>_clean.pdf` |
 | `--debug-pdf` | `ocr/*_ocr_overlay_debug.pdf`, `ocr/*_search_layer_debug.pdf` |
-| `--no-pdf` | Vain markdown |
+| `--no-pdf` | Markdown only |
 
 ---
 
-## Konfigurointi (`.env`)
+## Configuration (`.env`)
 
-Kaikki muuttujat: etuliite `PARSE_`. Tiedosto `.env` repojuuressa.
+All variables use the `PARSE_` prefix. Place `.env` in the repo root.
 
-### Moottorit & OCR
+### Engines & OCR
 
-| Muuttuja | Oletus | Merkitys |
-|----------|--------|----------|
-| `PARSE_ENGINE` | `hybrid` | Oletusmoottori |
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `PARSE_ENGINE` | `hybrid` | Default engine |
 | `PARSE_QUALITY` | `max` | `standard` \| `max` |
-| `PARSE_USE_VL_FOR_TEXT` | `true` | Markdown-teksti VL:stä |
-| `PARSE_USE_VL_FOR_READING_ORDER` | `true` | Lukujärjestys VL:stä |
-| `PARSE_USE_STRUCTUREV3_FOR_LAYOUT` | `true` | Bbox/palstat StructureV3:sta |
-| `PARSE_USE_STRUCTUREV3_FOR_IMAGES` | `true` | Kuvien rajaus |
-| `PARSE_USE_STRUCTUREV3_FOR_PDF_GEOMETRY` | `true` | PDF-sivukoko |
-| `PARSE_NO_SILENT_FALLBACK` | `true` | Fallback logitetaan |
-| `PARSE_VL_PIPELINE_VERSION` | `v1.6` | VL-pipeline |
-| `PARSE_VL_DEVICE` | `auto` | VL-laitteisto |
-| `PARSE_OCR_DEVICE` | `auto` | StructureV3-laitteisto |
-| `PARSE_OCR_PRIMARY_LANGUAGE` | `fi` | Ensisijainen kieli |
-| `PARSE_OCR_EXTRA_LANGUAGES` | `sv,en,de,…` | Fallback-järjestys |
+| `PARSE_USE_VL_FOR_TEXT` | `true` | Markdown text from VL |
+| `PARSE_USE_VL_FOR_READING_ORDER` | `true` | Reading order from VL |
+| `PARSE_USE_STRUCTUREV3_FOR_LAYOUT` | `true` | Bbox/columns from StructureV3 |
+| `PARSE_USE_STRUCTUREV3_FOR_IMAGES` | `true` | Photo cropping |
+| `PARSE_USE_STRUCTUREV3_FOR_PDF_GEOMETRY` | `true` | PDF page size |
+| `PARSE_NO_SILENT_FALLBACK` | `true` | Fallback is logged |
+| `PARSE_VL_PIPELINE_VERSION` | `v1.6` | VL pipeline |
+| `PARSE_VL_DEVICE` | `auto` | VL device |
+| `PARSE_OCR_DEVICE` | `auto` | StructureV3 device |
+| `PARSE_OCR_PRIMARY_LANGUAGE` | `fi` | Primary language |
+| `PARSE_OCR_EXTRA_LANGUAGES` | `sv,en,de,…` | Fallback order |
 
-### PDF & tuloste
+### PDF & output
 
-| Muuttuja | Oletus | Merkitys |
-|----------|--------|----------|
-| `PARSE_PDF_MODE` | `structural` | Pää-PDF-tyyppi |
-| `PARSE_WRITE_PDF` | `true` | Generoi PDF |
-| `PARSE_EMIT_FACSIMILE` | `false` | Facsimile vain erikseen |
-| `PARSE_EMIT_CLEAN` | `false` | Clean-PDF vain erikseen |
-| `PARSE_EMIT_DEBUG_PDF` | `false` | Debug-PDF:t |
-| `PARSE_DEBUG_OUTPUT_DIR` | `ocr` | QA-kansio syötteen alla |
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `PARSE_PDF_MODE` | `structural` | Primary PDF type |
+| `PARSE_WRITE_PDF` | `true` | Generate PDF |
+| `PARSE_EMIT_FACSIMILE` | `false` | Facsimile only when requested |
+| `PARSE_EMIT_CLEAN` | `false` | Clean PDF only when requested |
+| `PARSE_EMIT_DEBUG_PDF` | `false` | Debug PDFs |
+| `PARSE_DEBUG_OUTPUT_DIR` | `ocr` | QA directory under input |
 
 ### Structural layout
 
-| Muuttuja | Oletus | Merkitys |
-|----------|--------|----------|
-| `PARSE_RENDER_TEXT_AS_IMAGE` | `false` | Teksti renderöidään PDF-tekstinä, ei kuvana |
-| `PARSE_ALLOW_TEXT_CROPS` | `false` | Tekstialueiden raster-crop kielletty |
-| `PARSE_ALLOW_PHOTO_CROPS` | `true` | Valokuvien crop sallittu |
-| `PARSE_LAYOUT_PRESERVE` | `true` | Pyritään säilyttämään lähteen layout |
-| `PARSE_NEWSPAPER_COMPACT` | `true` | Tiivis structural layout (pystysuuntainen spacing) |
-| `PARSE_BOTTOM_COLUMN_MIN_FONT_SIZE` | `5.5` | Palstatekstin min-fontti |
-| `PARSE_BODY_MIN_FONT_SIZE` | `6.0` | Leipätekstin min-fontti |
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `PARSE_RENDER_TEXT_AS_IMAGE` | `false` | Text rendered as PDF text, not as image |
+| `PARSE_ALLOW_TEXT_CROPS` | `false` | Raster crop of text regions disabled |
+| `PARSE_ALLOW_PHOTO_CROPS` | `true` | Photo crops allowed |
+| `PARSE_LAYOUT_PRESERVE` | `true` | Preserve source layout where possible |
+| `PARSE_NEWSPAPER_COMPACT` | `true` | Compact structural layout (vertical spacing) |
+| `PARSE_BOTTOM_COLUMN_MIN_FONT_SIZE` | `5.5` | Column text minimum font size |
+| `PARSE_BODY_MIN_FONT_SIZE` | `6.0` | Body text minimum font size |
 
-CUDA-päivitys: `scripts\install_cuda.ps1`
+CUDA update: `scripts\install_cuda.ps1`
 
-**Huom.** Suomen StructureV3-OCR käyttää latin-mallia ruotsin (`sv`) kautta — PaddleOCR ei tarjoa erillistä `fi`-koodia Structure-pipelineen.
+**Note.** Finnish StructureV3 OCR uses the Latin model via Swedish (`sv`) — PaddleOCR does not provide a separate `fi` code for the Structure pipeline.
 
 ---
 
 ## Hybrid Quality Pipeline
 
-| Rooli | PaddleOCR-VL | PP-StructureV3 |
-|-------|--------------|----------------|
-| **Vastuu** | Teksti, otsikko, kappalejako, lukujärjestys | Bbox, palstat, kuvat, block types |
-| **Raaka-JSON** | `ocr/<nimi>_vl_res.json` | `ocr/<nimi>_structurev3_res.json` |
-| **Yhdistetty** | | `ocr/<nimi>_hybrid_res.json` |
+| Role | PaddleOCR-VL | PP-StructureV3 |
+|------|--------------|----------------|
+| **Responsibility** | Text, headings, paragraph structure, reading order | Bbox, columns, photos, block types |
+| **Raw JSON** | `ocr/<name>_vl_res.json` | `ocr/<name>_structurev3_res.json` |
+| **Combined** | | `ocr/<name>_hybrid_res.json` |
 
-Konfliktit → `ocr/<nimi>_compare_report.json`. Teksti ratkaistaan VL:llä, layout StructureV3:lla.
+Conflicts → `ocr/<name>_compare_report.json`. Text resolved by VL, layout by StructureV3.
 
 ```powershell
 kuvien-parsinta parse parsittavat\example\document.jpg
@@ -263,7 +265,7 @@ kuvien-parsinta parse parsittavat\example\document.jpg --engine structurev3
 
 ---
 
-## Reporakenne
+## Repository structure
 
 ```
 ├── src/kuvien_parsinta/
@@ -278,23 +280,23 @@ kuvien-parsinta parse parsittavat\example\document.jpg --engine structurev3
 │   └── regression/
 ├── scripts/
 ├── docs/
-├── parsittavat/          # paikalliset syötteet (ei commitoida)
+├── parsittavat/          # local inputs (not committed to Git)
 └── pyproject.toml
 ```
 
-`.venv/`, `PaddleOCR/` ja `parsittavat/*` (paitsi `.gitkeep`) eivät mene gitiin.
+`.venv/`, `PaddleOCR/` and `parsittavat/*` (except `.gitkeep`) are not tracked by Git.
 
 ---
 
-## Tila
+## Status
 
 - [x] Hybrid pipeline (VL + StructureV3)
 - [x] Structural PDF: source-anchored layout, typography, compact spacing
-- [x] Teksti PDF-tekstinä; valokuvat crop
+- [x] Text as PDF text; photos as crops
 - [x] Final text cleanup
-- [x] Quality gate + debug-raportit (`ocr/`)
-- [x] pytest (unit + regressio)
-- [ ] Eräkansio / useita tiedostoja kerralla (v0.2)
-- [ ] CI ilman GPU:ta
+- [x] Quality gate + debug reports (`ocr/`)
+- [x] pytest (unit + regression)
+- [ ] Batch folder / multiple files at once (v0.2)
+- [ ] CI without GPU
 
-Suunnitelma: [`docs/ROADMAP.md`](docs/ROADMAP.md)
+Roadmap: [`docs/ROADMAP.md`](docs/ROADMAP.md)
