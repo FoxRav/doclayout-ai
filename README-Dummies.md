@@ -1,6 +1,6 @@
 # doclayout-ai — lyhyt ohje
 
-Tämä työkalu **lukee tekstin kuvista ja PDF:istä** ja tallentaa sen selkeään muotoon (markdown + structural PDF).
+Tämä työkalu **lukee tekstin kuvista ja PDF:istä** ja tuottaa rakenteisen markdownin sekä structural PDF:n.
 
 ---
 
@@ -9,19 +9,16 @@ Tämä työkalu **lukee tekstin kuvista ja PDF:istä** ja tallentaa sen selkeä�
 1. Otat valokuvan tai skannatun sivun (jpg, png, …) — tai PDF:n
 2. Työkalu tunnistaa **rakenteen ja tekstin** (PaddleOCR-VL + PP-StructureV3)
 3. Saat tulokset **samaan kansioon kuin syöte**:
-   - **`<nimi>.md`** — teksti muokattavassa muodossa (Markdown)
-   - **`<nimi>_structural.pdf`** — uudelleenrakennettu layout-PDF (sanomalehti / lehtileike)
-
-Ei tarvita manuaalista kirjoittamista. Teksti poimitaan kuvasta automaattisesti.
+   - **`<nimi>.md`** — rakenteinen teksti (Markdown)
+   - **`<nimi>_structural.pdf`** — uudelleenrakennettu layout-PDF
 
 ---
 
 ## Mihin sopii?
 
-- Vanhat **kuulutukset** ja viralliset tekstit
-- **Lehtileikkeet** ja artikkelit (myös kaksipalstainen asettelu)
-- **Sanomalehden etusivut** (structural PDF + quality gate)
-- Muut **valokuvat, joissa on luettavaa tekstiä**
+- Skannatut asiakirjat ja sivut, joissa on luettavaa tekstiä
+- Monipalstaiset layoutit ja dokumentit, joissa on otsikoita, kuvia ja tekstilohkoja
+- PDF-syöte (yksi tai useampi sivu)
 
 Ensisijainen kieli on **suomi**, mutta työkalu tunnistaa myös ruotsia, englantia ja muita kieliä.
 
@@ -41,48 +38,32 @@ Asennus kestää noin 15–30 minuuttia. Tarvitset Python 3.10:n ja NVIDIA-näyt
 
 ### Joka kerta
 
-1. Luo kansio `parsittavat/OmaTyö/` ja laita sinne kuva tai PDF
+1. Luo kansio `parsittavat/example/` ja lisää sinne kuva tai PDF
 2. Avaa PowerShell **repojuuressa**
 3. Aja:
 
 ```powershell
 .\scripts\activate.ps1
-kuvien-parsinta parse parsittavat\OmaTyö\kuva.jpg
+kuvien-parsinta parse parsittavat\example\document.jpg --engine hybrid --quality max
 ```
 
-4. Avaa tulokset samasta kansiosta: `kuva.md` ja `kuva_structural.pdf`
+4. Avaa tulokset samasta kansiosta: `document.md`, `document_structural.pdf`, `ocr/document_quality_report.json`
 
 ### Syötekansio
 
-- `parsittavat/` on **paikallisia syötetiedostoja** varten — sisältöä ei commitoida.
-- Repossa on vain tyhjä `parsittavat/.gitkeep`; alikansiot luot itse.
+- `parsittavat/` on **paikallisia syötetiedostoja** varten — sisältöä ei commitoida
+- Repossa on vain `parsittavat/.gitkeep`; alikansiot luot itse
 
 ---
 
 ## Mitä tulosteessa on?
 
-**Yksinkertainen teksti** (esim. kuulutus):
-- Yksi otsikko ja yksi tai useampi kappale
-- Tavut yhdistetty luettavaksi lauseeksi
+- **Markdown** — otsikot, kappaleet ja dokumentin rakenne PageModelista
+- **Structural PDF** — uudelleenrakennettu sivu (ei koko skannauksen taustakuvaa)
+- **Quality report** — `ocr/<nimi>_quality_report.json` (PASS / PASS_WITH_WARNINGS / FAIL)
+- **Debug** — layout-kuva, OCR-JSON, typografia- ja visual-metriikat `ocr/`-kansiossa
 
-**Lehtileike** (kaksi palstaa):
-- Otsikko ja upotettu valokuva tunnistetaan automaattisesti
-- Markdownissa **vain teksti** — palstat eroteltu
-- PDF:ssä **sama rakenne kuin leikkeessä**: otsikko, rajattu kuva, teksti palstoissa
-
-**Sanomalehti** (etusivu):
-- Structural PDF typografialla (otsikot, sidebar, kuvateksti, alapalstat)
-- Quality gate: `QUALITY: PASS` / `PASS_WITH_WARNINGS` / `FAIL`
-
-**QA-artefaktit** (`ocr/`-alikansio syötteen alla):
-
-- `ocr/<nimi>_quality_report.json`
-- `ocr/<nimi>_layout_debug.jpg`
-- mahdollisia OCR-JSON- ja debug-tiedostoja
-
-Näitä **ei commitoida** — PDF:t, kuvat ja `ocr/`-tulokset ovat `.gitignore`:ssa.
-
-Otsikko tulee **aina kuvan tekstistä**, ei tiedostonimestä.
+Näitä **ei commitoida** — generoidut PDF:t, kuvat ja `ocr/`-tulokset ovat `.gitignore`:ssa.
 
 ---
 
@@ -90,16 +71,16 @@ Otsikko tulee **aina kuvan tekstistä**, ei tiedostonimestä.
 
 ```powershell
 # Vain markdown, ei PDF:ää
-kuvien-parsinta parse parsittavat\OmaTyö\kuva.jpg --no-pdf
+kuvien-parsinta parse parsittavat\example\document.jpg --no-pdf
 
 # Tuloste toiseen kansioon
-kuvien-parsinta parse parsittavat\OmaTyö\kuva.jpg -o output\testi
+kuvien-parsinta parse parsittavat\example\document.jpg -o output\run1
 
 # Pakota yksipalstainen tulkinta
-kuvien-parsinta parse parsittavat\OmaTyö\kuva.jpg --mode flowing
+kuvien-parsinta parse parsittavat\example\document.jpg --mode flowing
 
-# Pakota lehtileike-asettelu
-kuvien-parsinta parse parsittavat\OmaTyö\kuva.jpg --mode structural
+# Pakota structural layout
+kuvien-parsinta parse parsittavat\example\document.jpg --mode structural
 ```
 
 ---
@@ -107,7 +88,6 @@ kuvien-parsinta parse parsittavat\OmaTyö\kuva.jpg --mode structural
 ## Rajoitukset (nyt)
 
 - Yksi tiedosto kerrallaan (ei vielä koko kansion eräajoa)
-- PDF-syöte toimii; parhaiten testattu **lehtileike- ja sanomalehtikuvilla**
 - OCR tekee virheitä vanhoissa tai huonoissa kuvissa; tarkista aina tulos
 
 ---

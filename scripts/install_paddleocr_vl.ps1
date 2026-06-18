@@ -45,8 +45,8 @@ Write-Host "Installing paddleocr[doc-parser]>=3.4.0 ..."
 Write-Host "`n=== VL smoke test ===" -ForegroundColor Cyan
 $testImage = $null
 $candidates = @(
-    (Join-Path $RepoRoot "parsittavat\Koivisto_001\koivisto2_0-1280x1280.jpg"),
-    (Join-Path $RepoRoot "parsittavat\Kuulutus\kuulutus.jpg")
+    (Join-Path $RepoRoot "parsittavat\example\document.jpg"),
+    (Join-Path $RepoRoot "parsittavat\example\document.png")
 )
 foreach ($path in $candidates) {
     if (Test-Path $path) {
