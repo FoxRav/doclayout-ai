@@ -18,9 +18,23 @@ build/
 .coverage
 htmlcov/
 
-# Local job inputs and generated outputs (keep folder README)
-parsittavat/**/*
-!parsittavat/README.md
+# Local scratch and parse outputs
+.tmp_newspaper_crops/
+.tmp_test/
+out/
+ocr/
+
+# Local job inputs (keep empty folder placeholder only)
+parsittavat/*
+!parsittavat/.gitkeep
+
+# Generated / binary artefacts
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.webp
+*_hero.jpg
 
 # Legacy output dir
 output/

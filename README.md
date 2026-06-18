@@ -1,4 +1,4 @@
-# Kuvien-parsinta-SOTA
+# doclayout-ai
 
 **Monikielinen asiakirjojen parsinta:** valokuvat ja PDF:t → **markdown + structural PDF**.
 
@@ -8,7 +8,7 @@ Erillinen työkalu — ei Lapua-RAG:ia, ei vektori-indeksiä, ei kysely-API:ta.
 
 | | |
 |---|---|
-| **Sijainti** | `F:\-DEV-\95.Kuvien-parsinta-SOTA` |
+| **Repo** | [github.com/FoxRav/doclayout-ai](https://github.com/FoxRav/doclayout-ai) |
 | **Helppo aloitus** | [`README-Dummies.md`](README-Dummies.md) |
 | **Asennus** | [`docs/SETUP.md`](docs/SETUP.md) |
 | **Tunnetut virheet & opit** | [`docs/ERRORS.md`](docs/ERRORS.md) |
@@ -167,7 +167,8 @@ kuvien-parsinta parse parsittavat\Kuulutus\kuulutus.jpg
 ## Pikakäynnistys
 
 ```powershell
-cd F:\-DEV-\95.Kuvien-parsinta-SOTA
+git clone https://github.com/FoxRav/doclayout-ai.git
+cd doclayout-ai
 powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
 
 .\scripts\activate.ps1
