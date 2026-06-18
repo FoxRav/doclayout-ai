@@ -1,14 +1,11 @@
-# Isolated runtime (never commit secrets)
 .venv/
 .env
 
-# Vendored upstream (cloned by scripts/setup.ps1)
 PaddleOCR/
 
-# Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.class
 *.egg-info/
 dist/
 build/
@@ -18,17 +15,16 @@ build/
 .coverage
 htmlcov/
 
-# Local scratch and parse outputs
 .tmp_newspaper_crops/
 .tmp_test/
 out/
 ocr/
+output/
+tmp/
 
-# Local job inputs (keep empty folder placeholder only)
 parsittavat/*
 !parsittavat/.gitkeep
 
-# Generated / binary artefacts
 *.pdf
 *.jpg
 *.jpeg
@@ -36,13 +32,6 @@ parsittavat/*
 *.webp
 *_hero.jpg
 
-# Legacy output dir
-output/
-
-# Scratch / local experiments
-tmp/
-
-# OS / editor
 .DS_Store
 Thumbs.db
 desktop.ini
@@ -51,5 +40,4 @@ desktop.ini
 *.swp
 *.swo
 
-# Paddle model cache if downloaded into repo by mistake
 .paddlex/
