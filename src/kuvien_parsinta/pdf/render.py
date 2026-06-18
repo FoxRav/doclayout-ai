@@ -1,4 +1,4 @@
-"""Markdown → A4 PDF (Windows Arial). Ported from Lapua-RAG render_martti_magazine_pdf."""
+"""Markdown → A4 PDF (Windows Arial)."""
 
 from __future__ import annotations
 

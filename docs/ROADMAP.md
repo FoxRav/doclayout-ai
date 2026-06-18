@@ -18,6 +18,6 @@
 
 ## Decisions
 
-- Standalone repo + venv — no Lapua-RAG coupling
+- Standalone repo + isolated `.venv`
 - Hybrid pipeline default: VL document understanding + StructureV3 geometry; not mutually exclusive
 - `parsittavat/` is local input only (not committed except README)

@@ -1,8 +1,6 @@
 # doclayout-ai
 
-**Monikielinen asiakirjojen parsinta:** valokuvat ja PDF:t → **markdown + structural PDF**.
-
-Erillinen työkalu — ei Lapua-RAG:ia, ei vektori-indeksiä, ei kysely-API:ta.
+**Monikielinen asiakirjojen parsinta:** valokuvat ja PDF:t → **rakenteinen markdown + structural PDF**.
 
 **Hybrid Quality Pipeline:** PaddleOCR-VL (teksti, lukujärjestys, kappalejako) + PP-StructureV3 (layout, bbox, kuvat, PDF-geometria).
 
@@ -370,14 +368,3 @@ kuvien-parsinta parse parsittavat\Koivisto_001\koivisto2_0-1280x1280.jpg --engin
 - [ ] CI ilman GPU:ta
 
 Suunnitelma: [`docs/ROADMAP.md`](docs/ROADMAP.md)
-
----
-
-## Suhde 76.Lapua-RAG-OCR -repoon
-
-| 76-repo | 95-repo |
-|---------|---------|
-| RAG, Qdrant, LoRA, ingest | **Ei** |
-| Lehtileike- ja sanomalehtiparsinta | **Koko fokus** |
-| PP-StructureV3 ingest | **Käytössä** (kuva + PDF) |
-| Markdown + PDF tuotos | **Kyllä** — structural PDF, ei facsimile-oletusta |
