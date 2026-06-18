@@ -38,7 +38,7 @@ kuva tai PDF
 | Sääntö | Toteutus |
 |--------|----------|
 | Tekstialueet **PDF-tekstinä** | Otsikot, meta, body, caption — ei raster-croppeja tekstille |
-| Vain **valokuvat** kuvacropina | Hero- ja photo-roolit |
+| Vain **valokuvat** kuvacropina | Pääkuva / photo block — ei tekstialueita rasterina |
 | Markdown **PageModelista** | Ei suoraan raaka-OCR:stä; final-text cleanup ennen tulostetta |
 | Ei facsimileä oletuksena | Facsimile vain `--emit-facsimile` → `ocr/<nimi>_facsimile.pdf` |
 | Laadunvalvonta | Quality gate: `PASS` / `PASS_WITH_WARNINGS` / `FAIL` |
@@ -226,17 +226,17 @@ Kaikki muuttujat: etuliite `PARSE_`. Tiedosto `.env` repojuuressa.
 | `PARSE_EMIT_CLEAN` | `false` | Clean-PDF vain erikseen |
 | `PARSE_EMIT_DEBUG_PDF` | `false` | Debug-PDF:t |
 | `PARSE_DEBUG_OUTPUT_DIR` | `ocr` | QA-kansio syötteen alla |
-| `PARSE_LAYOUT_PRESERVE` | `true` | Kiinnitä layout source-anchoreihin |
 
 ### Structural layout
 
 | Muuttuja | Oletus | Merkitys |
 |----------|--------|----------|
-| `PARSE_RENDER_TEXT_AS_IMAGE` | `false` | Teksti ei croppeina |
+| `PARSE_RENDER_TEXT_AS_IMAGE` | `false` | Teksti renderöidään PDF-tekstinä, ei kuvana |
 | `PARSE_ALLOW_TEXT_CROPS` | `false` | Tekstialueiden raster-crop kielletty |
-| `PARSE_ALLOW_PHOTO_CROPS` | `true` | Valokuvacrop sallittu |
-| `PARSE_NEWSPAPER_COMPACT` | `true` | Tiivis pystysuuntainen asettelu |
-| `PARSE_BOTTOM_COLUMN_MIN_FONT_SIZE` | `5.5` | Alapalstan min-fontti (pt) |
+| `PARSE_ALLOW_PHOTO_CROPS` | `true` | Valokuvien crop sallittu |
+| `PARSE_LAYOUT_PRESERVE` | `true` | Pyritään säilyttämään lähteen layout |
+| `PARSE_NEWSPAPER_COMPACT` | `true` | Tiivis structural layout (pystysuuntainen spacing) |
+| `PARSE_BOTTOM_COLUMN_MIN_FONT_SIZE` | `5.5` | Palstatekstin min-fontti |
 | `PARSE_BODY_MIN_FONT_SIZE` | `6.0` | Leipätekstin min-fontti |
 
 CUDA-päivitys: `scripts\install_cuda.ps1`
