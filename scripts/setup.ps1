@@ -4,14 +4,16 @@
   One-shot setup: isolated .venv inside this repo (does NOT touch system Python).
 
 .USAGE
-  cd F:\-DEV-\95.Kuvien-parsinta-SOTA
+  git clone https://github.com/FoxRav/doclayout-ai.git
+  cd doclayout-ai
   powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
+  .\scripts\activate.ps1
 #>
 $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $RepoRoot
 
-Write-Host "=== Kuvien-parsinta-SOTA setup ===" -ForegroundColor Cyan
+Write-Host "=== doclayout-ai setup ===" -ForegroundColor Cyan
 Write-Host "Repo: $RepoRoot"
 Write-Host "All packages install ONLY into: $RepoRoot\.venv" -ForegroundColor Yellow
 
@@ -99,4 +101,4 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "`n=== DONE ===" -ForegroundColor Green
 Write-Host "Activate:  .\.venv\Scripts\Activate.ps1"
-Write-Host "Parse:     kuvien-parsinta parse path\to\kuva.png"
+Write-Host "Parse:     kuvien-parsinta parse parsittavat\example.jpg"

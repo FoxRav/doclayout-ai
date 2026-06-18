@@ -4,7 +4,8 @@
   Upgrade repo venv to CUDA-enabled PyTorch (cu118, matches paddlepaddle-gpu).
 
 .USAGE
-  cd F:\-DEV-\95.Kuvien-parsinta-SOTA
+  git clone https://github.com/FoxRav/doclayout-ai.git
+  cd doclayout-ai
   powershell -ExecutionPolicy Bypass -File scripts\install_cuda.ps1
 #>
 $ErrorActionPreference = "Stop"

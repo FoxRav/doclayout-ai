@@ -4,7 +4,8 @@
   Install PaddleOCR-VL doc-parser extras into the repo .venv.
 
 .USAGE
-  cd F:\-DEV-\95.Kuvien-parsinta-SOTA
+  git clone https://github.com/FoxRav/doclayout-ai.git
+  cd doclayout-ai
   powershell -ExecutionPolicy Bypass -File scripts\install_paddleocr_vl.ps1
 #>
 $ErrorActionPreference = "Stop"

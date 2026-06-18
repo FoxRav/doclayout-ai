@@ -11,7 +11,7 @@ from kuvien_parsinta.engines.runner import EngineRunError
 from kuvien_parsinta.models import OutputMode, ParseEngineChoice, PdfMode, QualityMode
 from kuvien_parsinta.pipeline import ParsePipeline
 
-app = typer.Typer(help="Kuvien-parsinta-SOTA: multilingual image/PDF → markdown + PDF")
+app = typer.Typer(help="doclayout-ai: multilingual image/PDF → markdown + PDF")
 
 
 @app.command()

@@ -4,7 +4,22 @@ from __future__ import annotations
 
 import importlib
 import sys
+from pathlib import Path
 from typing import Iterable
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
+def _verify_repo_layout(repo_root: Path) -> int:
+    required = ("pyproject.toml", "src", "scripts")
+    missing = [name for name in required if not (repo_root / name).exists()]
+    if missing:
+        print("ERROR: Run this command from the doclayout-ai repository root.")
+        print("Missing:", list(missing))
+        return 1
+    return 0
 
 
 def _section(title: str) -> None:
@@ -25,11 +40,24 @@ def _check(names: Iterable[str]) -> list[str]:
 
 
 def main() -> int:
-    _section("Python (expect repo .venv)")
+    repo_root = _repo_root()
+    layout_rc = _verify_repo_layout(repo_root)
+    if layout_rc != 0:
+        return layout_rc
+
+    _section("Repository")
+    print(f"  root={repo_root}")
+    venv_python = repo_root / ".venv" / "Scripts" / "python.exe"
+    if not venv_python.is_file():
+        print("  WARN  .venv not found — run scripts\\setup.ps1")
+    elif Path(sys.executable).resolve() != venv_python.resolve():
+        print("  WARN  Current interpreter is not repo .venv\\Scripts\\python.exe")
+    else:
+        print("  OK    using repo .venv interpreter")
+
+    _section("Python")
     print(sys.executable)
     print(sys.version)
-    if "95.Kuvien-parsinta-SOTA" not in sys.executable.replace("\\", "/"):
-        print("  WARN  Interpreter path does not look like repo .venv")
 
     failed: list[str] = []
 
