@@ -1,0 +1,21 @@
+# OCR / layout deps on top of editable paddleocr[all] + paddlepaddle-gpu.
+# Installed by scripts/setup.ps1 into repo .venv only.
+
+opencv-python
+albumentations
+albucore
+beautifulsoup4
+lxml
+pypdfium2
+python-docx
+fonttools>=4.43.0
+onnxruntime-gpu
+rapidfuzz
+scikit-image
+
+# VL / transformers path (local PaddleOCR-VL, no cloud API)
+paddleformers
+transformers>=4.57
+accelerate
+timm
+einops

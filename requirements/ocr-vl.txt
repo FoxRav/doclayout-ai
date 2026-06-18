@@ -1,0 +1,4 @@
+# PaddleOCR-VL doc parser (install via scripts/install_paddleocr_vl.ps1).
+# Requires exactly one of paddlepaddle-gpu OR paddlepaddle in .venv — not both.
+
+paddleocr[doc-parser]>=3.4.0

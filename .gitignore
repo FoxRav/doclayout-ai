@@ -1,0 +1,41 @@
+# Isolated runtime (never commit secrets)
+.venv/
+.env
+
+# Vendored upstream (cloned by scripts/setup.ps1)
+PaddleOCR/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local job inputs and generated outputs (keep folder README)
+parsittavat/**/*
+!parsittavat/README.md
+
+# Legacy output dir
+output/
+
+# Scratch / local experiments
+tmp/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Paddle model cache if downloaded into repo by mistake
+.paddlex/

@@ -1,0 +1,21 @@
+{
+  "mode": "hybrid",
+  "text_source": "paddle_vl",
+  "layout_source": "pp_structure",
+  "reading_order_source": "paddle_vl",
+  "title": "Different",
+  "conflicts": [
+    {
+      "type": "title",
+      "vl": "Different",
+      "structurev3": "Structure",
+      "resolution": "vl"
+    }
+  ],
+  "sources": {
+    "vl_json": "ocr\\doc_vl_res.json",
+    "structurev3_json": "ocr\\doc_res.json"
+  },
+  "confidence_avg": 0.9,
+  "uses_layout_pdf": false
+}

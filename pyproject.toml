@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kuvien-parsinta"
+version = "0.1.0"
+description = "Multilingual document parsing: images and PDFs to markdown and PDF (PaddleOCR SOTA stack)"
+readme = "README.md"
+requires-python = ">=3.10,<3.11"
+license = { text = "Proprietary" }
+authors = [{ name = "CCG-FAKTUM" }]
+keywords = ["ocr", "paddleocr", "markdown", "pdf", "multilingual", "finnish"]
+
+dependencies = [
+  "pydantic>=2.9",
+  "pydantic-settings>=2.13",
+  "typer>=0.24",
+  "structlog>=25.0",
+  "rich>=15.0",
+]
+
+[project.optional-dependencies]
+pdf = ["fpdf2>=2.8", "pymupdf>=1.24"]
+dev = [
+  "pytest>=9.0",
+  "pytest-cov>=7.0",
+  "ruff>=0.15",
+  "mypy>=1.20",
+]
+# Full OCR stack (PaddleOCR clone + GPU paddle) is installed by scripts/setup.ps1
+# into .venv only — not via pip install kuvien-parsinta[ocr].
+
+[project.scripts]
+kuvien-parsinta = "kuvien_parsinta.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["kuvien_parsinta*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "ANN", "SIM", "RUF"]
+ignore = ["ANN401", "PLR0913", "RUF001", "RUF002"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["ANN", "S101"]
+"src/kuvien_parsinta/ocr/**/*.py" = ["PLC0415"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["src/kuvien_parsinta"]
+
+[[tool.mypy.overrides]]
+module = ["paddleocr.*", "paddlex.*", "paddle.*", "fpdf.*", "fitz"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
