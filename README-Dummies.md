@@ -1,16 +1,16 @@
-# Kuvien-parsinta-SOTA — lyhyt ohje
+# doclayout-ai — lyhyt ohje
 
-Tämä työkalu **lukee tekstin kuvista** (ja myöhemmin PDF:istä) ja tallentaa sen selkeään muotoon.
+Tämä työkalu **lukee tekstin kuvista ja PDF:istä** ja tallentaa sen selkeään muotoon (markdown + structural PDF).
 
 ---
 
 ## Mitä se tekee?
 
 1. Otat valokuvan tai skannatun sivun (jpg, png, …) — tai PDF:n
-2. Työkalu tunnistaa **rakenteen ja tekstin** (PP-StructureV3 + OCR)
-3. Saat kaksi tiedostoa **samaan kansioon kuin kuva**:
-   - **`.md`** — teksti muokattavassa muodossa (Markdown)
-   - **`.pdf`** — valmis lukukappale
+2. Työkalu tunnistaa **rakenteen ja tekstin** (PaddleOCR-VL + PP-StructureV3)
+3. Saat tulokset **samaan kansioon kuin syöte**:
+   - **`<nimi>.md`** — teksti muokattavassa muodossa (Markdown)
+   - **`<nimi>_structural.pdf`** — uudelleenrakennettu layout-PDF (sanomalehti / lehtileike)
 
 Ei tarvita manuaalista kirjoittamista. Teksti poimitaan kuvasta automaattisesti.
 
@@ -20,6 +20,7 @@ Ei tarvita manuaalista kirjoittamista. Teksti poimitaan kuvasta automaattisesti.
 
 - Vanhat **kuulutukset** ja viralliset tekstit
 - **Lehtileikkeet** ja artikkelit (myös kaksipalstainen asettelu)
+- **Sanomalehden etusivut** (structural PDF + quality gate)
 - Muut **valokuvat, joissa on luettavaa tekstiä**
 
 Ensisijainen kieli on **suomi**, mutta työkalu tunnistaa myös ruotsia, englantia ja muita kieliä.
@@ -31,7 +32,8 @@ Ensisijainen kieli on **suomi**, mutta työkalu tunnistaa myös ruotsia, englant
 ### Ensimmäinen kerta (asennus, kerran)
 
 ```powershell
-cd F:\-DEV-\95.Kuvien-parsinta-SOTA
+git clone https://github.com/FoxRav/doclayout-ai.git
+cd doclayout-ai
 powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
 ```
 
@@ -39,8 +41,8 @@ Asennus kestää noin 15–30 minuuttia. Tarvitset Python 3.10:n ja NVIDIA-näyt
 
 ### Joka kerta
 
-1. Laita kuva kansioon `parsittavat/` (esim. `parsittavat/OmaTyö/kuva.jpg`)
-2. Avaa PowerShell repokansiossa
+1. Luo kansio `parsittavat/OmaTyö/` ja laita sinne kuva tai PDF
+2. Avaa PowerShell **repojuuressa**
 3. Aja:
 
 ```powershell
@@ -48,7 +50,12 @@ Asennus kestää noin 15–30 minuuttia. Tarvitset Python 3.10:n ja NVIDIA-näyt
 kuvien-parsinta parse parsittavat\OmaTyö\kuva.jpg
 ```
 
-4. Avaa tulokset samasta kansiosta: `kuva.md` ja `kuva.pdf`
+4. Avaa tulokset samasta kansiosta: `kuva.md` ja `kuva_structural.pdf`
+
+### Syötekansio
+
+- `parsittavat/` on **paikallisia syötetiedostoja** varten — sisältöä ei commitoida.
+- Repossa on vain tyhjä `parsittavat/.gitkeep`; alikansiot luot itse.
 
 ---
 
@@ -58,11 +65,22 @@ kuvien-parsinta parse parsittavat\OmaTyö\kuva.jpg
 - Yksi otsikko ja yksi tai useampi kappale
 - Tavut yhdistetty luettavaksi lauseeksi
 
-**Lehtileike** (kaksi palstaa, esim. Koivisto):
-- Otsikko ja upotettu valokuva tunnistetaan automaattisesti (PP-StructureV3)
-- Markdownissa **vain teksti** — palstat eroteltu (`## Oikea palsta` jne.)
-- PDF:ssä **sama rakenne kuin leikkeessä**: otsikko, rajattu kuva vasemmalla, teksti oikealla (yksi sivu)
-- Erillinen `<nimi>_photo.jpg` — pelkkä tunnistettu muotokuva
+**Lehtileike** (kaksi palstaa):
+- Otsikko ja upotettu valokuva tunnistetaan automaattisesti
+- Markdownissa **vain teksti** — palstat eroteltu
+- PDF:ssä **sama rakenne kuin leikkeessä**: otsikko, rajattu kuva, teksti palstoissa
+
+**Sanomalehti** (etusivu):
+- Structural PDF typografialla (otsikot, sidebar, kuvateksti, alapalstat)
+- Quality gate: `QUALITY: PASS` / `PASS_WITH_WARNINGS` / `FAIL`
+
+**QA-artefaktit** (`ocr/`-alikansio syötteen alla):
+
+- `ocr/<nimi>_quality_report.json`
+- `ocr/<nimi>_layout_debug.jpg`
+- mahdollisia OCR-JSON- ja debug-tiedostoja
+
+Näitä **ei commitoida** — PDF:t, kuvat ja `ocr/`-tulokset ovat `.gitignore`:ssa.
 
 Otsikko tulee **aina kuvan tekstistä**, ei tiedostonimestä.
 
@@ -72,16 +90,16 @@ Otsikko tulee **aina kuvan tekstistä**, ei tiedostonimestä.
 
 ```powershell
 # Vain markdown, ei PDF:ää
-kuvien-parsinta parse kuva.jpg --no-pdf
+kuvien-parsinta parse parsittavat\OmaTyö\kuva.jpg --no-pdf
 
 # Tuloste toiseen kansioon
-kuvien-parsinta parse kuva.jpg -o output\testi
+kuvien-parsinta parse parsittavat\OmaTyö\kuva.jpg -o output\testi
 
 # Pakota yksipalstainen tulkinta
-kuvien-parsinta parse kuva.jpg --mode flowing
+kuvien-parsinta parse parsittavat\OmaTyö\kuva.jpg --mode flowing
 
 # Pakota lehtileike-asettelu
-kuvien-parsinta parse kuva.jpg --mode structural
+kuvien-parsinta parse parsittavat\OmaTyö\kuva.jpg --mode structural
 ```
 
 ---
@@ -89,7 +107,7 @@ kuvien-parsinta parse kuva.jpg --mode structural
 ## Rajoitukset (nyt)
 
 - Yksi tiedosto kerrallaan (ei vielä koko kansion eräajoa)
-- PDF-syöte toimii (yksisivuiset ja monisivuiset); parhaiten testattu **lehtileike-kuvilla**
+- PDF-syöte toimii; parhaiten testattu **lehtileike- ja sanomalehtikuvilla**
 - OCR tekee virheitä vanhoissa tai huonoissa kuvissa; tarkista aina tulos
 
 ---

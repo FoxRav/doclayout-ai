@@ -3,15 +3,24 @@
 Kaikki asennukset tapahtuvat **vain** repokansion `.venv`-hakemistoon.
 Järjestelmän Pythonia, PATH:ia tai globaalia pip:ä **ei muuteta**.
 
+## Projektin hankinta
+
+```powershell
+git clone https://github.com/FoxRav/doclayout-ai.git
+cd doclayout-ai
 ```
-F:\-DEV-\95.Kuvien-parsinta-SOTA\
-├── .venv\              ← ainoa Python-ympäristö (ei gitiin)
-├── PaddleOCR\          ← upstream-klooni (git clone setup.ps1:llä)
-├── parsittavat\        ← paikalliset syötteet (ei gitiin, paitsi README)
-├── requirements\       ← OCR-extras (setup.ps1)
-├── scripts\            ← setup, verify_env, CUDA
-├── src\kuvien_parsinta\← sovelluskoodi
-├── tests\              ← unit-testit
+
+Repojuuren rakenne:
+
+```
+doclayout-ai/
+├── .venv/              ← ainoa Python-ympäristö (ei gitiin)
+├── PaddleOCR/          ← upstream-klooni (git clone setup.ps1:llä)
+├── parsittavat/        ← paikalliset syötteet (vain .gitkeep repossa)
+├── requirements/       ← OCR-extras (setup.ps1)
+├── scripts/            ← setup, verify_env, CUDA
+├── src/kuvien_parsinta/← sovelluskoodi
+├── tests/              ← unit- ja regressiotestit
 └── .env                ← paikallinen konfig (ei commitoida)
 ```
 
@@ -25,8 +34,9 @@ F:\-DEV-\95.Kuvien-parsinta-SOTA\
 
 ## Yksi komento
 
+Aja repojuuresta:
+
 ```powershell
-cd F:\-DEV-\95.Kuvien-parsinta-SOTA
 powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
 ```
 
@@ -39,7 +49,7 @@ Skripti:
 5. Asentaa OCR-extras + **torch 2.5.1+cu118** (CUDA, sama kuin Paddle)
 6. Asentaa `kuvien-parsinta` + fpdf2 + dev-työkalut
 7. Asentaa torch/Paddle **DLL-preload hookin** venv:iin (Windows)
-8. Luo `.env` pohjalta
+8. Luo `.env` pohjalta `.env.example`:sta
 9. Ajaa `scripts/verify_env.py` + pytest
 
 **CUDA-päivitys olemassa olevaan venv:iin** (ilman täyttä setupia):
@@ -53,12 +63,33 @@ Kesto: noin 15–30 min (verkosta riippuen).
 ## Päivittäinen käyttö
 
 ```powershell
-cd F:\-DEV-\95.Kuvien-parsinta-SOTA
 .\scripts\activate.ps1          # tai .\.venv\Scripts\Activate.ps1
-kuvien-parsinta parse kuva.png
+kuvien-parsinta parse parsittavat\example.jpg
 ```
 
 **Älä** aja `pip install` ilman aktivoitua `.venv`:ä.
+
+## Syötekansio (`parsittavat/`)
+
+- Tarkoitettu **paikallisille** kuville ja PDF:ille — ei commitoida repoon.
+- `parsittavat/*` on `.gitignore`:ssa; repossa on vain `parsittavat/.gitkeep`.
+- Luo itse alikansiot (esim. `parsittavat/OmaTyö/`) ja lisää syötteet sinne.
+- Tulosteet syntyvät **samaan kansioon** kuin syöte (esim. `parsittavat/OmaTyö/kuva.md`).
+
+## Tulosteet (ei gitiin)
+
+Normaali ajo tuottaa syötekansion viereen:
+
+| Tiedosto | Sisältö |
+|----------|---------|
+| `<nimi>.md` | Päämarkdown |
+| `<nimi>_structural.pdf` | Uudelleenrakennettu layout-PDF |
+| `ocr/<nimi>_quality_report.json` | Quality gate -raportti |
+| `ocr/<nimi>_layout_debug.jpg` | Layout-debug-kuva |
+
+Lisäksi `ocr/`-kansioon voi syntyä OCR-JSON, style debug, visual metrics jne.
+
+**Näitä ei commitoida:** `.gitignore` sulkee pois `ocr/`, `*.pdf`, `*.jpg`, `*.png` ja muut generoidut artefaktit.
 
 ## Tarkista ympäristö
 
@@ -70,7 +101,7 @@ Odotettu: `All checks passed.` + `paddle.utils.run_check()` OK.
 
 ## Torch + Paddle DLL (Windows)
 
-Repo sisältää saman koukun kuin 76.Lapua-RAG-OCR:
+Repo sisältää Windows-kohtaisen DLL-preload -koukun:
 
 - `scripts/_paddleocr_preload.py`
 - `scripts/_paddleocr_torch_dll_fix.pth`
