@@ -17,10 +17,10 @@ htmlcov/
 
 .tmp_newspaper_crops/
 .tmp_test/
-out/
-ocr/
-output/
-tmp/
+/out/
+/ocr/
+/output/
+/tmp/
 
 parsittavat/*
 !parsittavat/.gitkeep
